@@ -11,7 +11,6 @@ const socket = io('https://preprodvicsdk.bettech.live/', {
 function formatStart(iso) {
     if (!iso) return { date: '', time: '' };
     const d = new Date(iso);
-
     return {
         date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
@@ -21,8 +20,6 @@ function formatStart(iso) {
 function renderSportTabs(sports) {
     const tabrow = document.querySelector('.sports-tabrow');
     if (!tabrow) return;
-
-    // Only render if tabrow is empty (not on detail page with static tabs)
     if (tabrow.querySelector('.sports-tab-item')) {
         console.log('Static tabs found, skipping dynamic render');
         return;
@@ -33,7 +30,6 @@ function renderSportTabs(sports) {
         btn.setAttribute('role', 'tab');
         btn.className = 'sports-tab-item' + (idx === 0 ? ' active' : '');
         btn.setAttribute('aria-selected', idx === 0 ? 'true' : 'false');
-        // use sport id (si) as tab/card identifier
         btn.setAttribute('aria-controls', String(s.si));
         btn.id = 'tab-' + String(s.si);
         btn.dataset.tab = String(s.si);
@@ -45,7 +41,6 @@ function renderSportTabs(sports) {
 function renderSportCards(sports, eventsBySi) {
     const content = document.querySelector('.sports-tab-content');
     if (!content) return;
-    // clear existing static cards
     content.innerHTML = '';
     sports.forEach((s, idx) => {
         const si = String(s.si);
@@ -79,8 +74,8 @@ function renderSportCards(sports, eventsBySi) {
         `;
 
         const body = header.querySelector('.match-list-body');
-
         const events = eventsBySi && eventsBySi[si] ? eventsBySi[si] : [];
+        
         if (!events || events.length === 0) {
             const noEvt = document.createElement('div');
             noEvt.className = 'top-matches';
@@ -90,7 +85,6 @@ function renderSportCards(sports, eventsBySi) {
         } else {
             events.forEach(ev => {
                 const t = formatStart(ev.st);
-                const suspendedHtml = ev.go === false ? `<div class="odds-overlay suspended">Suspended</div>` : '';
                 const match = document.createElement('div');
                 match.className = 'top-matches';
                 match.innerHTML = `
@@ -128,15 +122,12 @@ function renderSportCards(sports, eventsBySi) {
                 body.appendChild(match);
             });
         }
-
         card.appendChild(header);
         content.appendChild(card);
     });
 }
 
-// ✅ FUNCTION TO NAVIGATE TO DETAIL PAGE WITH MARKET DATA
 function navigateToSportsDetail(eventId, eventName, marketData) {
-    // Store the data for the detail page
     const eventData = {
         eventId: eventId,
         eventName: eventName,
@@ -144,63 +135,54 @@ function navigateToSportsDetail(eventId, eventName, marketData) {
         timestamp: new Date().getTime()
     };
     
-    // Store in sessionStorage
     sessionStorage.setItem('currentEventData', JSON.stringify(eventData));
-    
-    // Navigate to detail page
     window.location.href = `./sportsDetail.html?eid=${eventId}`;
 }
 
-// Event Listeners
-document.addEventListener('DOMContentLoaded', () => {
-    const tabs = document.querySelector('.sports-tabrow');
-    tabs && tabs.addEventListener('click', e => {
-        const tab = e.target.closest('.sports-tab-item');
-        if (!tab) return;
-        const selectedTab = tab.dataset.tab;
-        document.querySelectorAll('.sports-tab-item').forEach(item => item.classList.toggle('active', item === tab));
-        document.querySelectorAll('.sports-card').forEach(card => {
-            card.style.display = (card.id === selectedTab) ? 'block' : 'none';
-        });
-    });
-
-    // ✅ DYNAMIC MARKET FETCH ON CLICK
-    document.addEventListener('click', function(e) {
-        const teamLink = e.target.closest('.teams');
-        if (teamLink) {
-            e.preventDefault();
-            
-            // ✅ GET DYNAMIC EVENT ID FROM data attribute
-            const eventId = teamLink.getAttribute('data-eid');
-            const eventName = teamLink.querySelector('.team-name').textContent;
-            
-            console.log(`Match clicked: ${eventName} (ID: ${eventId})`);
-            
-            // ✅ DYNAMIC MARKET API CALL WITH CLICKED EVENT ID
-            socket.emit('market', { type: "list", data: eventId }, (marketCallback) => {
-                console.log(`Market data for event ${eventId}:`, marketCallback);
-                
-                // Navigate to detail page with market data
-                navigateToSportsDetail(eventId, eventName, marketCallback);
+// ✅ CHECK IF WE'RE ON MAIN PAGE BEFORE RUNNING SPORTS LOGIC
+if (!window.location.pathname.includes('sportsDetail.html')) {
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabs = document.querySelector('.sports-tabrow');
+        tabs && tabs.addEventListener('click', e => {
+            const tab = e.target.closest('.sports-tab-item');
+            if (!tab) return;
+            const selectedTab = tab.dataset.tab;
+            document.querySelectorAll('.sports-tab-item').forEach(item => item.classList.toggle('active', item === tab));
+            document.querySelectorAll('.sports-card').forEach(card => {
+                card.style.display = (card.id === selectedTab) ? 'block' : 'none';
             });
-        }
-    });
-});
+        });
 
-socket.on('connect', () => {
-    console.log('Socket connected');
-    socket.emit('sport', (callback) => {
-        console.log('Sport List:', callback);
-        const sports = callback && callback.data ? callback.data : [];
-        renderSportTabs(sports);
-
-        // request events for all sport ids
-        const siList = sports.map(s => s.si).filter(Boolean).join(',');
-        socket.emit('event', { type: 'list', data: siList }, (evCallback) => {
-            console.log('Event List:', evCallback);
-            const eventsBySi = evCallback && evCallback.data ? evCallback.data : {};
-            
-            renderSportCards(sports, eventsBySi);
+        document.addEventListener('click', function(e) {
+            const teamLink = e.target.closest('.teams');
+            if (teamLink) {
+                e.preventDefault();
+                const eventId = teamLink.getAttribute('data-eid');
+                const eventName = teamLink.querySelector('.team-name').textContent;
+                
+                console.log(`Match clicked: ${eventName} (ID: ${eventId})`);
+                
+                socket.emit('market', { type: "list", data: eventId }, (marketCallback) => {
+                    console.log(`Market data for event ${eventId}:`, marketCallback);
+                    navigateToSportsDetail(eventId, eventName, marketCallback);
+                });
+            }
         });
     });
-});
+
+    socket.on('connect', () => {
+        console.log('Socket connected - MAIN PAGE');
+        socket.emit('sport', (callback) => {
+            console.log('Sport List:', callback);
+            const sports = callback && callback.data ? callback.data : [];
+            renderSportTabs(sports);
+
+            const siList = sports.map(s => s.si).filter(Boolean).join(',');
+            socket.emit('event', { type: 'list', data: siList }, (evCallback) => {
+                console.log('Event List:', evCallback);
+                const eventsBySi = evCallback && evCallback.data ? evCallback.data : {};
+                renderSportCards(sports, eventsBySi);
+            });
+        });
+    });
+}

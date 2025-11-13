@@ -15,7 +15,6 @@
                 <div class="mktdetail-list-hdr">
                     <div class="mktdetail-list-ttl">
                         <span class="mktdetail-list-cat">Match Odds</span>
-                        <button type="button" class="mktdetail-btn">Cashout</button>
                     </div>
                     <div class="mktdetail-list-odds">
                         <div class="mktdetail-list-odd type-back">Back</div>
@@ -128,7 +127,6 @@
                     <div class="mktdetail-list-hdr">
                         <div class="mktdetail-list-ttl">
                             <span class="mktdetail-list-cat">Bookmaker 0%comm</span>
-                            <button type="button" class="mktdetail-btn">Cashout</button>
                         </div>
                         <div class="mktdetail-list-odds">
                             <div class="mktdetail-list-odd type-back">Back</div>
@@ -257,11 +255,9 @@
                     </div>
                 </div>
 
-                <!-- COMPLETED MATCH -->
                 <div class="mktdetail-list-hdr">
                     <div class="mktdetail-list-ttl">
                         <span class="mktdetail-list-cat">Match Odds</span>
-                        <button type="button" class="mktdetail-btn">Cashout</button>
                     </div>
                     <div class="mktdetail-list-odds">
                         <div class="mktdetail-list-odd type-back">Back</div>
@@ -324,7 +320,7 @@
         </div>
     </div>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-    <script src="./script.js"></script>
+    <!-- <script src="./script.js"></script> -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const tabs = document.querySelector('.sports-tabrow');
@@ -355,6 +351,39 @@
 
                 console.log('Active tab:', selectedTab);
             });
+        });
+
+        // detail.js - No storage needed
+        const socket = io('https://preprodvicsdk.bettech.live/', {
+            reconnectionAttempts: 1000,
+            transports: ["websocket"]
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('=== DETAIL PAGE LOADED ===');
+
+            // Get event ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('eid');
+
+            console.log('Event ID from URL:', eventId);
+
+            // ✅ FETCH FRESH MARKET DATA DIRECTLY
+            socket.on('connect', () => {
+                console.log('Socket connected on detail page');
+
+                // Fetch market data for this specific event
+                socket.emit('market', { type: "list", data: eventId }, (marketCallback) => {
+                    console.log('✅ Market data for event:', marketCallback);
+                    displayEventDetail(eventId, marketCallback);
+                });
+            });
+
+            function displayEventDetail(eventId, marketData) {
+                console.log('=== DISPLAYING EVENT DETAIL ===');
+                console.log('Event ID:', eventId);
+                console.log('Market Data:', marketData);
+            }
         });
     </script>
 
