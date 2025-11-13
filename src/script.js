@@ -175,12 +175,13 @@ socket.on('connect', () => {
             console.log('Total Events:', allEventIds.length);
             
             // ✅ CALL MARKET API FOR EACH eid
-             allEventIds.forEach(eventId => {
-                socket.emit('market', { type: "list", data: eventId }, (marketCallback) => {
-                    console.log(marketCallback);
+            //  allEventIds.forEach(eventId => {
+                socket.emit('market', { type: "list", data: "34945175" }, (marketCallback) => {
+                    console.log("Markets" ,marketCallback);
                 });
-            });
+            // });
             
+              console.log(`Fetching markets for: ${eventName} (ID: ${eventId})`);
             renderSportCards(sports, eventsBySi);
         });
     });
