@@ -1,0 +1,544 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box
+}
+
+body {
+    font-family: Arial, sans-serif
+}
+
+.sports-page {
+    background-color: #2F2E2E;
+    height: 100vh;
+    overflow-y: auto
+}
+
+.sports-tabwrapper {
+    padding: 5px 10px;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    overflow: hidden;
+    position: sticky;
+    top: 0;
+    z-index: 99;
+    margin: 0 auto;
+    /* margin-top: 10px */
+    background-color: #2F2E2E;
+}
+
+.sports-tabrow {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    white-space: nowrap;
+    scroll-behavior: smooth;
+    justify-content: center
+}
+
+.sports-tab-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 20px;
+    border: 1px solid gray;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #fff;
+    background-color: #fff0;
+    text-transform: uppercase;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .5px;
+    transform: skewX(-20deg);
+}
+
+.sports-tab-item.active {
+    background-color: #fff;
+    color: #002b5b;
+    font-weight: 700;
+    border-color: #fff
+}
+
+.sports-tab-item.active:hover {
+    background-color: #e6e6e6
+}
+
+.sports-tab-item:hover {
+    background-color: #fff;
+    color: #000
+}
+
+.sports-tabrow::-webkit-scrollbar {
+    height: 4px
+}
+
+.sports-tabrow::-webkit-scrollbar-thumb {
+    background: #1e4f8f;
+    border-radius: 10px
+}
+
+.sports-tab-content {
+    padding: 0 15px
+}
+
+.sports-page .sports-card {
+    overflow: hidden;
+    margin-top: 15px;
+    margin-bottom: 15px
+}
+
+.sports-event-lsection {
+    position: relative;
+    z-index: 0
+}
+
+.event-lhdr {
+    padding: 10px;
+    background: linear-gradient(45deg, #4D98DF, #133C6E)
+}
+
+.event-lttl {
+    display: flex;
+    align-items: center;
+    color: #fff
+}
+
+.event-lttl .sct-val {
+    font-size: clamp(0.875rem, 0.8036rem + 0.3571vw, 1.125rem);
+    font-weight: 600
+}
+
+.sports-event-lsection .match-list-hdr {
+    height: 31px;
+    background-color: #133C6E;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    color: #fff;
+    margin-bottom: 10px;
+    margin-top: 5px
+}
+
+.sports-event-lsection .match-list-hdr-ttl {
+    flex: 1;
+    padding: 0 10px;
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 16px
+}
+
+.sports-event-lsection .match-list-hdr-matched {
+    width: 152px;
+    min-width: 152px;
+    padding: 0 10px
+}
+
+.sports-event-lsection .match-listhdr-odds-wrp {
+    display: flex;
+    width: 100%;
+    min-width: 690px;
+    max-width: 690px;
+    gap: 0
+}
+
+.sports-event-lsection .match-list-hdr-odds {
+    width: calc(33.33% - 10px);
+    min-width: calc(33.33% - 10px);
+    margin-right: 10px;
+    padding: 0 10px
+}
+
+.sports-event-lsection .top-matches {
+    display: flex;
+    min-height: 58px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    align-items: center;
+    gap: 10px;
+    padding: 0 15px;
+    border-bottom: 1px solid #fff
+}
+
+.sports-event-lsection .top-matches .team-wpr {
+    display: flex;
+    flex: 1;
+    align-items: center
+}
+
+.inplay-txt {
+    color: #68cf49;
+    font-size: 14px;
+    font-weight: 600;
+    animation: blink 2s infinite
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1
+    }
+
+    50% {
+        opacity: 0
+    }
+}
+
+.sports-event-lsection .top-matches .teams {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 20px;
+    cursor: pointer;
+    justify-content: center;
+    text-decoration: none
+}
+
+.sports-event-lsection .top-matches .team-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff
+}
+
+.sports-event-lsection .top-matches .match-time {
+    color: #fff;
+    font-size: 14px;
+    margin-right: 10px;
+    font-weight: 600;
+}
+
+.sports-event-lsection .top-matches .matches-odds-wrp {
+    background-color: #fff0;
+    padding: 5px;
+    align-items: center;
+    max-width: 680px;
+    min-width: 680px;
+    width: 100%;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    margin-left: auto;
+}
+
+.info-div {
+    display: flex;
+    align-items: center;
+    flex: 1;
+
+}
+
+.sports-event-lsection .top-matches .matches-odds-card {
+    position: relative;
+    width: 100%;
+    padding: 5px;
+    overflow: hidden;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap
+}
+
+.sports-page .top-matches .odds-count-wrp {
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+    gap: 40px;
+}
+
+.sports-event-lsection .top-matches .top-matches-count {
+    display: flex;
+    padding: 5px;
+    border-radius: 5px;
+    overflow: hidden;
+    flex: 1;
+    gap: 2px;
+    margin-right: 10px;
+    justify-content: space-between
+}
+
+.sports-event-lsection .top-matches .match-odd {
+    display: flex;
+    width: calc(50% - 2px);
+    min-width: calc(50% - 2px);
+    height: 44px;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 5px 0;
+    border-radius: 5px
+}
+
+.back-bg {
+    color: #fff;
+    border: 1px solid #4884B3
+}
+
+.lay-bg {
+    border: 1px solid #EBA7B7;
+    color: #fff
+}
+
+.sports-page .top-matches .match-odd .odd-val {
+    font-size: 14px;
+    font-weight: 700
+}
+
+.sports-page .top-matches .top-matches-count:last-child {
+    margin-right: 0
+}
+
+.sports-page .top-matches .odds-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgb(255 255 255 / .78);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #000;
+    z-index: 1
+}
+
+.sports-page .top-matches .odds-overlay.suspended {
+    color: #000;
+}
+
+/* Sports Detail page */
+
+.mktdetail-listing {
+    margin: 0 15px;
+}
+
+.mktdetail-list-hdr {
+    background: linear-gradient(45deg, #C57B89, #79B6E7);
+    align-items: center;
+    justify-content: space-between;
+    color: #fff;
+    display: flex;
+    height: 40px;
+    margin-bottom: 5px;
+}
+
+.mktdetail-list {
+    transition: opacity 0.3s ease-in-out;
+}
+
+.mktdetail-list-ttl {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.mktdetail-list-cat {
+    font-size: clamp(0.75rem, 0.725rem + 0.125vw, 0.875rem);
+    font-weight: 700;
+    margin-left: 10px;
+    text-transform: uppercase;
+}
+
+.mktdetail-list-hdr .mktdetail-btn {
+    background-color: #fff;
+    color: #000;
+    border: 0px;
+    border-radius: 3px;
+    font-size: clamp(0.625rem, 0.6rem + 0.125vw, 0.75rem);
+    font-weight: 600;
+    padding: 3px 8px;
+    margin-left: 15px;
+}
+
+.mktdetail-list-odds {
+    width: 436px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: clamp(0.75rem, 0.725rem + 0.125vw, 0.875rem);
+    font-weight: 700;
+    position: relative;
+}
+
+.mktdetail-list.one-backlay-item .mktdetail-list-odd {
+    width: 69px;
+    max-width: 69px;
+}
+
+.mktdetail-list.one-backlay-item .mktdetail-list-odds {
+    justify-content: center;
+}
+
+.mktdetail-list-odd {
+    width: 218px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+}
+
+.mktdetail-list-content {
+    position: relative;
+}
+
+.mktdetail-list-topmatches {
+    height: 55px;
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.mktdetail-list-topmatches .team-wpr {
+    display: flex;
+    flex: 1;
+    width: 100%;
+}
+
+.mktdetail-list-topmatches .team-wpr .team-name {
+    font-size: clamp(0.75rem, 0.725rem + 0.125vw, 0.875rem);
+    font-weight: 600;
+    align-items: center;
+    margin: auto;
+    flex: 1;
+    width: 100%;
+    padding-left: 20px;
+    color: #fff;
+}
+
+.mktdetail-list-topmatches .team-wpr .team-name .profit-info {
+    font-size: clamp(0.625rem, 0.6rem + 0.125vw, 0.75rem);
+    font-weight: 600;
+    margin: auto;
+    align-items: center;
+}
+
+.mktdetail-list-topmatches .team-wpr .team-name .red {
+    color: #fff;
+}
+
+.mktdetail-list-topmatches .matches-odds-wrp {
+    display: flex;
+    margin-right: auto;
+    position: relative;
+}
+
+.mktdetail-list-topmatches .odds-count-wrp {
+    display: flex;
+    width: 450px;
+    min-width: 450px;
+    justify-content: space-between;
+}
+
+.mktdetail-list-topmatches .top-matches-count.type-back {
+    justify-content: flex-end;
+}
+
+.mktdetail-list-topmatches .top-matches-count {
+    display: flex;
+    min-width: 218px;
+    width: 218px;
+    gap: 1px;
+    margin-right: 12px;
+}
+
+.mktdetail-list-topmatches .top-matches-count:last-child {
+    margin-right: 0;
+}
+
+.mktdetail-list-topmatches .match-odd {
+    flex: 1;
+    display: flex;
+    height: 54px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    max-width: 69px;
+    width: 69px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.mktdetail-list-topmatches .odd-val {
+    font-size: clamp(0.75rem, 0.725rem + 0.125vw, 0.875rem);
+    font-weight: 600;
+}
+
+.mktdetail-list-topmatches .odd-price {
+    font-size: clamp(0.625rem, 0.6rem + 0.125vw, 0.75rem);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mktdetail-list-topmatches .matches-odds-wrp .odds-overlay {
+    position: absolute;
+    width: 96%;
+    height: 100%;
+    top: 0;
+    right: 10px;
+    background-color: rgba(255, 255, 255, 0.78);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: clamp(0.75rem, 0.725rem + 0.125vw, 0.875rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #000;
+    border-radius: 5px;
+}
+
+@media (max-width: 1500px) {
+    .sports-tabrow {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 991px) {
+    .sports-event-lsection .top-matches .matches-odds-wrp {
+        max-width: 500px;
+        min-width: 500px;
+    }
+
+    .sports-event-lsection .match-listhdr-odds-wrp {
+        min-width: 510px;
+        max-width: 510px;
+    }
+
+    .sports-page .top-matches .odds-count-wrp {
+        gap: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .sports-tabrow {
+        justify-content: flex-start;
+    }
+    .sports-event-lsection .match-listhdr-odds-wrp{
+        display: none;
+    }
+    .sports-event-lsection .top-matches{
+        gap: 0;
+        flex-direction: column;
+    }
+    .sports-event-lsection .top-matches .matches-odds-wrp{
+        margin-left: unset;
+        min-width: 400px;
+        max-width: 400px;
+    }
+    .sports-event-lsection .top-matches .top-matches-count{
+        margin-right: 0;
+    }
+}

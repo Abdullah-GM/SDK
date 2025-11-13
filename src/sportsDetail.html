@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <div class="sports-page">
+        <div class="mktdetail-listing">
+            <div class="mktdetail-list has-tooltip">
+                <div class="mktdetail-list-hdr">
+                    <div class="mktdetail-list-ttl">
+                        <span class="mktdetail-list-cat">Match Odds</span>
+                        <button type="button" class="mktdetail-btn">Cashout</button>
+                    </div>
+                    <div class="mktdetail-list-odds">
+                        <div class="mktdetail-list-odd type-back">Back</div>
+                        <div class="mktdetail-list-odd type-lay">Lay</div>
+                    </div>
+                </div>
+                <div class="mktdetail-list-content">
+                    <div class="mktdtl-desk-wrp">
+                        <div class="mktdetail-list-topmatches">
+                            <div class="team-wpr">
+                                <div class="team-name">
+                                    <div>England</div>
+                                    <div class="profit-info" id="profit-info">
+                                        <span class="score-change">
+                                            <span class="red">0</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="matches-odds-wrp">
+                                <div class="odds-count-wrp">
+                                    <div class="top-matches-count type-back">
+                                        <div class="match-odd back-bg blink">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                        <div class="match-odd back-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                        <div class="match-odd back-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                    </div>
+                                    <div class="top-matches-count type-lay">
+                                        <div class="match-odd lay-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                        <div class="match-odd lay-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                        <div class="match-odd lay-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Overlay suspended -->
+                                <!-- <div class="odds-overlay suspended">
+                                    Suspended
+                                </div> -->
+                            </div>
+                        </div>
+                        <div class="mktdetail-list-topmatches">
+                            <div class="team-wpr">
+                                <div class="team-name">
+                                    <div>England</div>
+                                    <div class="profit-info" id="profit-info">
+                                        <span class="score-change">
+                                            <span class="red">0</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="matches-odds-wrp">
+                                <div class="odds-count-wrp">
+                                    <div class="top-matches-count type-back">
+                                        <div class="match-odd back-bg blink">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                        <div class="match-odd back-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                        <div class="match-odd back-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                    </div>
+                                    <div class="top-matches-count type-lay">
+                                        <div class="match-odd lay-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                        <div class="match-odd lay-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                        <div class="match-odd lay-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Overlay suspended -->
+                                <div class="odds-overlay suspended">
+                                    Suspended
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Book Maker -->
+                <div class="mktdetail-list one-backlay-item">
+                    <div class="mktdetail-list-hdr">
+                        <div class="mktdetail-list-ttl">
+                            <span class="mktdetail-list-cat">Bookmaker 0%comm</span>
+                            <button type="button" class="mktdetail-btn">Cashout</button>
+                        </div>
+                        <div class="mktdetail-list-odds">
+                            <div class="mktdetail-list-odd type-back">Back</div>
+                            <div class="mktdetail-list-odd type-lay">Lay</div>
+                        </div>
+                    </div>
+
+                    <div class="mktdetail-list-content">
+                        <div class="mktdetail-list-topmatches">
+                            <div class="team-wpr">
+                                <div class="team-name">England</div>
+                            </div>
+                            <div class="matches-odds-wrp">
+                                <div class="odds-count-wrp">
+                                    <div class="top-matches-count type-back">
+                                        <div class="match-odd back-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                    </div>
+                                    <div class="top-matches-count type-lay">
+                                        <div class="match-odd lay-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- <div class="odds-overlay suspended">
+                                    Suspended
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Markets Tab -->
+                <div id="sports-sticky-tab" class="sports-tabwrapper">
+                    <div class="sports-tabrow" role="tablist" aria-label="Sports Categories">
+
+                        <button role="tab" class="sports-tab-item active" aria-selected="true"
+                            aria-controls="other-market" id="tab-other-market" data-tab="other-market">
+                            <span class="sports-tabttl-wrap">
+                                <span class="sports-tabttl">OTHER MARKET</span>
+                            </span>
+                        </button>
+
+                        <button role="tab" class="sports-tab-item" aria-selected="false" aria-controls="odd-even-market"
+                            id="tab-odd-even-market" data-tab="odd-even-market">
+                            <span class="sports-tabttl-wrap">
+                                <span class="sports-tabttl">ODD EVEN MARKET</span>
+                            </span>
+                        </button>
+
+                    </div>
+                </div>
+
+                <!-- TAB CONTENT 1 -->
+                <div class="mktdetail-list one-backlay-item mktdetail-tab" id="other-market">
+                    <div class="mktdetail-list-hdr">
+                        <div class="mktdetail-list-ttl">
+                            <span class="mktdetail-list-cat">OTHER MARKET</span>
+                        </div>
+                        <div class="mktdetail-list-odds">
+                            <div class="mktdetail-list-odd type-back">Back</div>
+                            <div class="mktdetail-list-odd type-lay">Lay</div>
+                        </div>
+                    </div>
+                    <div class="mktdetail-list-content">
+                        <div class="mktdetail-list-topmatches">
+                            <div class="team-wpr">
+                                <div class="team-name">England</div>
+                            </div>
+                            <div class="matches-odds-wrp">
+                                <div class="odds-count-wrp">
+                                    <div class="top-matches-count type-back">
+                                        <div class="match-odd back-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                    </div>
+                                    <div class="top-matches-count type-lay">
+                                        <div class="match-odd lay-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB CONTENT 2 -->
+                <div class="mktdetail-list one-backlay-item mktdetail-tab" id="odd-even-market" style="display: none;">
+                    <div class="mktdetail-list-hdr">
+                        <div class="mktdetail-list-ttl">
+                            <span class="mktdetail-list-cat">ODD EVEN MARKET</span>
+                        </div>
+                        <div class="mktdetail-list-odds">
+                            <div class="mktdetail-list-odd type-back">Back</div>
+                            <div class="mktdetail-list-odd type-lay">Lay</div>
+                        </div>
+                    </div>
+                    <div class="mktdetail-list-content">
+                        <div class="mktdetail-list-topmatches">
+                            <div class="team-wpr">
+                                <div class="team-name">India</div>
+                            </div>
+                            <div class="matches-odds-wrp">
+                                <div class="odds-count-wrp">
+                                    <div class="top-matches-count type-back">
+                                        <div class="match-odd back-bg">
+                                            <div class="odd-val">30.1</div>
+                                            <div class="odd-price">₹ 22</div>
+                                        </div>
+                                    </div>
+                                    <div class="top-matches-count type-lay">
+                                        <div class="match-odd lay-bg">
+                                            <div class="odd-val">1.0</div>
+                                            <div class="odd-price">₹ 167</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COMPLETED MATCH -->
+                <div class="mktdetail-list-hdr">
+                    <div class="mktdetail-list-ttl">
+                        <span class="mktdetail-list-cat">Match Odds</span>
+                        <button type="button" class="mktdetail-btn">Cashout</button>
+                    </div>
+                    <div class="mktdetail-list-odds">
+                        <div class="mktdetail-list-odd type-back">Back</div>
+                        <div class="mktdetail-list-odd type-lay">Lay</div>
+                    </div>
+                </div>
+                <div class="mktdetail-list-content">
+                    <div class="mktdtl-desk-wrp">
+                        <div class="mktdetail-list-topmatches">
+                            <div class="team-wpr">
+                                <div class="team-name">
+                                    <div>England</div>
+                                    <div class="profit-info" id="profit-info">
+                                        <span class="score-change">
+                                            <span class="red">0</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="matches-odds-wrp">
+                                <div class="odds-count-wrp">
+                                    <div class="top-matches-count type-back">
+                                        <div class="match-odd back-bg blink">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                        <div class="match-odd back-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                        <div class="match-odd back-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                    </div>
+                                    <div class="top-matches-count type-lay">
+                                        <div class="match-odd lay-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                        <div class="match-odd lay-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                        <div class="match-odd lay-bg">
+                                            <div class="odd-val">1.30</div>
+                                            <div class="odd-price">₹ 67</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Overlay suspended -->
+                                <!-- <div class="odds-overlay suspended">
+                                    Suspended
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="./script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelector('.sports-tabrow');
+            const tabItems = document.querySelectorAll('.sports-tab-item');
+            const cards = document.querySelectorAll('.mktdetail-tab');
+
+            tabs.addEventListener('click', (e) => {
+                const tab = e.target.closest('.sports-tab-item');
+                if (!tab) return;
+
+                const selectedTab = tab.dataset.tab;
+
+                // Update active tab
+                tabItems.forEach(item => {
+                    const isActive = item === tab;
+                    item.classList.toggle('active', isActive);
+                    item.setAttribute('aria-selected', isActive);
+                });
+
+                // Show/hide corresponding content
+                cards.forEach(card => {
+                    if (card.id === selectedTab) {
+                        card.style.display = ''; // let CSS handle display type
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                console.log('Active tab:', selectedTab);
+            });
+        });
+    </script>
+
+
+</body>
+
+</html>
