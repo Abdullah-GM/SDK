@@ -16,206 +16,177 @@
     </div>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
-   <script>
-    const socket = io('https://preprodvicsdk.bettech.live/', {
-        reconnectionAttempts: 1000,
-        transports: ["websocket"]
-    });
-
-    let subscribedMarkets = new Set();
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        const eventId = urlParams.get('eid');
-
-        if (!eventId) {
-            showNoEventMessage();
-            return;
-        }
-
-        socket.on('odds', (oddsData) => {
-            console.log('Odds Data:', oddsData);
-            updateLiveOdds(oddsData);
+    <script>
+        const socket = io('https://preprodvicsdk.bettech.live/', {
+            reconnectionAttempts: 1000,
+            transports: ["websocket"]
         });
 
-        socket.on('update', (updateData) => {
-            console.log('Update Data:', updateData);
-            updateLiveOdds(updateData);
-        });
+        let subscribedMarkets = new Set();
 
-        socket.on('connect', () => {
-            socket.emit('market', { type: "list", data: eventId }, (marketCallback) => {
-                if (!marketCallback?.data?.[eventId]) {
-                    showNoEventMessage();
-                    return;
-                }
-                populateActiveMarkets(marketCallback);
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('eid');
+
+            if (!eventId) {
+                showNoEventMessage();
+                return;
+            }
+
+            socket.on('odds', updateLiveOdds);
+            socket.on('update', updateLiveOdds);
+
+            socket.on('connect', () => {
+                socket.emit('market', { type: "list", data: eventId }, (marketCallback) => {
+                    if (!marketCallback?.data?.[eventId]) {
+                        showNoEventMessage();
+                        return;
+                    }
+                    populateActiveMarkets(marketCallback);
+                });
             });
-        });
 
-        function showNoEventMessage() {
-            const container = document.querySelector('.mktdetail-listing');
-            if (!container) return;
-            container.innerHTML = `
+            function showNoEventMessage() {
+                const container = document.querySelector('.mktdetail-listing');
+                if (!container) return;
+                container.innerHTML = `
                 <div class="no-event-message">
                     <h2>No Event Found</h2>
                     <p>The requested event could not be found or is no longer available.</p>
                 </div>
             `;
-        }
-
-        function populateActiveMarkets(marketData) {
-            const container = document.querySelector('.mktdetail-listing');
-            if (!container) return;
-
-            container.innerHTML = '';
-            const allMarkets = marketData.data[eventId];
-            const activeMarkets = allMarkets.filter(market => market.s === true && market.go === false);
-
-            if (activeMarkets.length === 0) {
-                container.innerHTML = '<div class="no-markets">No active markets available</div>';
-                return;
             }
 
-            subscribeToMarkets(activeMarkets);
+            function populateActiveMarkets(marketData) {
+                const container = document.querySelector('.mktdetail-listing');
+                if (!container) return;
 
-            const marketsByType = groupMarketsByType(activeMarkets);
-            Object.keys(marketsByType).forEach(marketType => {
-                const marketSection = createMarketSection(marketType, marketsByType[marketType]);
-                container.appendChild(marketSection);
-            });
-        }
+                container.innerHTML = '';
+                const allMarkets = marketData.data[eventId];
+                const activeMarkets = allMarkets.filter(market => market.s === true && market.go === false);
 
-        function subscribeToMarkets(markets) {
-            const marketIds = markets.map(market => market.mid).filter(Boolean);
-            if (marketIds.length === 0) return;
-
-            const marketIdsString = marketIds.join(',');
-            socket.emit('subscribe', marketIdsString, (response) => {
-                if (response.status === 1) {
-                    marketIds.forEach(id => subscribedMarkets.add(id));
-                    console.log('Subscribed to markets:', marketIdsString);
+                if (activeMarkets.length === 0) {
+                    container.innerHTML = '<div class="no-markets">No active markets available</div>';
+                    return;
                 }
-            });
-        }
 
-        function updateLiveOdds(oddsData) {
-            if (!oddsData?.data) return;
+                subscribeToMarkets(activeMarkets);
 
-            // Extract market data from different structures
-            const marketUpdates = [];
-            
-            if (Array.isArray(oddsData.data)) {
-                // Structure: {data: [{room: "...", data: {...}}]}
-                oddsData.data.forEach(item => {
-                    if (item.data) marketUpdates.push(item.data);
-                });
-            } else {
-                // Structure: {data: {marketId: {...}}}
-                Object.values(oddsData.data).forEach(market => {
-                    marketUpdates.push(market);
+                const marketsByType = groupMarketsByType(activeMarkets);
+                Object.keys(marketsByType).forEach(marketType => {
+                    const marketSection = createMarketSection(marketType, marketsByType[marketType]);
+                    container.appendChild(marketSection);
                 });
             }
 
-            // Update each market
-            marketUpdates.forEach(marketData => {
-                if (marketData.mid) {
-                    updateMarketOdds(marketData.mid, marketData);
+            function subscribeToMarkets(markets) {
+                const marketIds = markets.map(market => market.mid).filter(Boolean);
+                if (marketIds.length === 0) return;
+
+                const marketIdsString = marketIds.join(',');
+                socket.emit('subscribe', marketIdsString, (response) => {
+                    if (response.status === 1) {
+                        marketIds.forEach(id => subscribedMarkets.add(id));
+                        console.log('Subscribed to markets:', marketIdsString);
+                    }
+                });
+            }
+
+            function updateLiveOdds(oddsData) {
+
+                if (!oddsData?.data) return;
+
+                const marketUpdates = [];
+
+                // Handle both data structures
+                if (Array.isArray(oddsData.data)) {
+                    oddsData.data.forEach(item => item.data && marketUpdates.push(item.data));
+                } else {
+                    Object.values(oddsData.data).forEach(market => marketUpdates.push(market));
                 }
-            });
-        }
 
-        function updateMarketOdds(marketId, marketData) {
-            const oddsElements = document.querySelectorAll(`[data-market="${marketId}"]`);
-            if (oddsElements.length === 0) return;
+                // Update markets
+                marketUpdates.forEach(marketData => {
+                    if (marketData.mid) {
+                        updateMarketOdds(marketData.mid, marketData);
+                    }
+                });
 
-            oddsElements.forEach(element => {
-                const oddType = element.getAttribute('data-type');
-                updateOddElement(element, oddType, marketData);
-            });
-        }
-
-        function updateOddElement(element, oddType, marketData) {
-            const [type, position] = oddType.split('-');
-            const isTwoBoxMarket = marketData.mid && marketData.mid.includes('-');
-
-            if (isTwoBoxMarket) {
-                updateTwoBoxMarket(element, type, marketData);
-            } else {
-                updateSixBoxMarket(element, type, marketData);
-            }
-        }
-
-        function updateTwoBoxMarket(element, type, marketData) {
-            let oddsValue, priceValue;
-
-            if (type === 'back') {
-                oddsValue = marketData.b;
-                priceValue = marketData.br;
-            } else {
-                oddsValue = marketData.l;
-                priceValue = marketData.lr;
+                console.log('Live odds updated:', oddsData);
             }
 
-            // Update only if we have valid data
-            if (isValidValue(oddsValue)) {
-                element.querySelector('.odd-val').textContent = oddsValue;
-                element.querySelector('.odd-price').textContent = priceValue || '--';
-                
-                element.classList.add('blink');
-                setTimeout(() => element.classList.remove('blink'), 1000);
-            }
-        }
+            function updateMarketOdds(marketId, marketData) {
+                const oddsElements = document.querySelectorAll(`[data-market="${marketId}"]`);
+                if (oddsElements.length === 0) {
+                    return;
+                }
 
-        function updateSixBoxMarket(element, type, marketData) {
-            if (!marketData.r || !marketData.r.length) return;
-
-            const marketElement = element.closest('[data-runner-id]');
-            if (!marketElement) return;
-
-            const runnerId = marketElement.getAttribute('data-runner-id');
-            const runner = marketData.r.find(r => r.rid == runnerId);
-            if (!runner) return;
-
-            let oddsValue, priceValue;
-
-            if (type === 'back') {
-                oddsValue = runner.b;
-                priceValue = runner.br;
-            } else {
-                oddsValue = runner.l;
-                priceValue = runner.lr;
+                oddsElements.forEach(element => {
+                    const oddType = element.getAttribute('data-type');
+                    updateOddElement(element, oddType, marketData);
+                });
             }
 
-            // Update only if we have valid data
-            if (isValidValue(oddsValue)) {
-                element.querySelector('.odd-val').textContent = oddsValue;
-                element.querySelector('.odd-price').textContent = priceValue || '--';
-                
-                element.classList.add('blink');
-                setTimeout(() => element.classList.remove('blink'), 1000);
+            function updateOddElement(element, oddType, marketData) {
+                const [type] = oddType.split('-');
+                const isTwoBoxMarket = marketData.mid && marketData.mid.includes('-');
+
+                if (isTwoBoxMarket) {
+                    updateTwoBoxMarket(element, type, marketData);
+                } else {
+                    updateSixBoxMarket(element, type, marketData);
+                }
             }
-        }
 
-        function isValidValue(value) {
-            return value !== undefined && value !== null && value !== '0' && value !== 0;
-        }
+            function updateTwoBoxMarket(element, type, marketData) {
+                const oddsValue = type === 'back' ? marketData.b : marketData.l;
+                const priceValue = type === 'back' ? marketData.br : marketData.lr;
 
-        function groupMarketsByType(markets) {
-            const grouped = {};
-            markets.forEach(market => {
-                const type = market.ty || 'other';
-                if (!grouped[type]) grouped[type] = [];
-                grouped[type].push(market);
-            });
-            return grouped;
-        }
+                // Always update, even with 0 values
+                if (oddsValue !== undefined && oddsValue !== null) {
+                    element.querySelector('.odd-val').textContent = oddsValue;
+                    element.querySelector('.odd-price').textContent = priceValue || '--';
 
-        function createMarketSection(marketType, markets) {
-            const section = document.createElement('div');
-            section.className = 'mktdetail-list has-tooltip';
+                    element.classList.add('blink');
+                    setTimeout(() => element.classList.remove('blink'), 1000);
+                }
+            }
 
-            section.innerHTML = `
+            function updateSixBoxMarket(element, type, marketData) {
+                if (!marketData.r || !marketData.r.length) {
+                    return;
+                }
+
+                const marketElement = element.closest('[data-runner-id]');
+                if (!marketElement) {
+                    return;
+                }
+
+                const runnerId = marketElement.getAttribute('data-runner-id');
+                const runner = marketData.r.find(r => r.rid == runnerId);
+                if (!runner) {
+                    return;
+                }
+
+                const oddsValue = type === 'back' ? runner.b : runner.l;
+                const priceValue = type === 'back' ? runner.br : runner.lr;
+            }
+
+            function groupMarketsByType(markets) {
+                const grouped = {};
+                markets.forEach(market => {
+                    const type = market.ty || 'other';
+                    if (!grouped[type]) grouped[type] = [];
+                    grouped[type].push(market);
+                });
+                return grouped;
+            }
+
+            function createMarketSection(marketType, markets) {
+                const section = document.createElement('div');
+                section.className = 'mktdetail-list has-tooltip';
+
+                section.innerHTML = `
                 <div class="mktdetail-list-hdr">
                     <div class="mktdetail-list-ttl">
                         <span class="mktdetail-list-cat">${formatMarketType(marketType)}</span>
@@ -232,14 +203,14 @@
                 </div>
             `;
 
-            return section;
-        }
+                return section;
+            }
 
-        function createMarketHTML(market) {
-            const isTwoBoxMarket = market.mid && market.mid.includes('-');
+            function createMarketHTML(market) {
+                const isTwoBoxMarket = market.mid && market.mid.includes('-');
 
-            if (market.r && market.r.length > 0) {
-                return market.r.map(runner => `
+                if (market.r && market.r.length > 0) {
+                    return market.r.map(runner => `
                     <div class="mktdetail-list-topmatches" data-market-id="${market.mid}" data-runner-id="${runner.rid}">
                         <div class="team-wpr">
                             <div class="team-name">
@@ -258,8 +229,8 @@
                         </div>
                     </div>
                 `).join('');
-            } else {
-                return `
+                } else {
+                    return `
                     <div class="mktdetail-list-topmatches" data-market-id="${market.mid}">
                         <div class="team-wpr">
                             <div class="team-name">
@@ -278,38 +249,38 @@
                         </div>
                     </div>
                 `;
+                }
             }
-        }
 
-        function createOddsHTML(type, marketId, isTwoBoxMarket) {
-            if (isTwoBoxMarket) {
-                return `
+            function createOddsHTML(type, marketId, isTwoBoxMarket) {
+                if (isTwoBoxMarket) {
+                    return `
                     <div class="match-odd ${type}-bg" data-market="${marketId}" data-type="${type}-1">
                         <div class="odd-val">--</div>
                         <div class="odd-price">--</div>
                     </div>
                 `;
-            } else {
-                return [1, 2, 3].map(position => `
+                } else {
+                    return [1, 2, 3].map(position => `
                     <div class="match-odd ${type}-bg" data-market="${marketId}" data-type="${type}-${position}">
                         <div class="odd-val">--</div>
                         <div class="odd-price">--</div>
                     </div>
                 `).join('');
+                }
             }
-        }
 
-        function formatMarketType(type) {
-            const typeMap = {
-                'match-odd': 'Match Odds',
-                'session': 'Session Markets',
-                'fancy': 'Fancy Markets',
-                'bookmaker': 'Bookmaker'
-            };
-            return typeMap[type] || type.replace(/-/g, ' ').toUpperCase();
-        }
-    });
-</script>
+            function formatMarketType(type) {
+                const typeMap = {
+                    'match-odd': 'Match Odds',
+                    'session': 'Session Markets',
+                    'fancy': 'Fancy Markets',
+                    'bookmaker': 'Bookmaker'
+                };
+                return typeMap[type] || type.replace(/-/g, ' ').toUpperCase();
+            }
+        });
+    </script>
 
 </body>
 
