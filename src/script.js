@@ -100,7 +100,7 @@ function renderSportCards(sports, eventsBySi) {
                             <span class="mtch-time">${t.time}</span>
                         </div>
                         <div class="team-wpr">
-                            <a href="./sportsDetail.html?eid=${ev.eid}" class="teams">
+                            <a href="./sportsDetail.html?eid=${ev.eid}" class="teams" data-eid="${ev.eid}">
                                 <div class="team-name">${ev.na}</div>
                             </a>
                             ${ev.ip ? `<div class="inplay-txt">In-Play</div>` : ''}
@@ -134,6 +134,23 @@ function renderSportCards(sports, eventsBySi) {
     });
 }
 
+// ✅ FUNCTION TO NAVIGATE TO DETAIL PAGE WITH MARKET DATA
+function navigateToSportsDetail(eventId, eventName, marketData) {
+    // Store the data for the detail page
+    const eventData = {
+        eventId: eventId,
+        eventName: eventName,
+        marketData: marketData,
+        timestamp: new Date().getTime()
+    };
+    
+    // Store in sessionStorage
+    sessionStorage.setItem('currentEventData', JSON.stringify(eventData));
+    
+    // Navigate to detail page
+    window.location.href = `./sportsDetail.html?eid=${eventId}`;
+}
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     const tabs = document.querySelector('.sports-tabrow');
@@ -145,6 +162,28 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.sports-card').forEach(card => {
             card.style.display = (card.id === selectedTab) ? 'block' : 'none';
         });
+    });
+
+    // ✅ DYNAMIC MARKET FETCH ON CLICK
+    document.addEventListener('click', function(e) {
+        const teamLink = e.target.closest('.teams');
+        if (teamLink) {
+            e.preventDefault();
+            
+            // ✅ GET DYNAMIC EVENT ID FROM data attribute
+            const eventId = teamLink.getAttribute('data-eid');
+            const eventName = teamLink.querySelector('.team-name').textContent;
+            
+            console.log(`Match clicked: ${eventName} (ID: ${eventId})`);
+            
+            // ✅ DYNAMIC MARKET API CALL WITH CLICKED EVENT ID
+            socket.emit('market', { type: "list", data: eventId }, (marketCallback) => {
+                console.log(`Market data for event ${eventId}:`, marketCallback);
+                
+                // Navigate to detail page with market data
+                navigateToSportsDetail(eventId, eventName, marketCallback);
+            });
+        }
     });
 });
 
@@ -161,27 +200,6 @@ socket.on('connect', () => {
             console.log('Event List:', evCallback);
             const eventsBySi = evCallback && evCallback.data ? evCallback.data : {};
             
-            // ✅ EXTRACT ALL eid VALUES
-            const allEventIds = [];
-            Object.values(eventsBySi).forEach(events => {
-                events.forEach(event => {
-                    if (event.eid) {  // Use eid instead of id
-                        allEventIds.push(event.eid);
-                    }
-                });
-            });
-            
-            console.log('All Event IDs (eid):', allEventIds);
-            console.log('Total Events:', allEventIds.length);
-            
-            // ✅ CALL MARKET API FOR EACH eid
-            //  allEventIds.forEach(eventId => {
-                socket.emit('market', { type: "list", data: "34945175" }, (marketCallback) => {
-                    console.log("Markets" ,marketCallback);
-                });
-            // });
-            
-              console.log(`Fetching markets for: ${eventName} (ID: ${eventId})`);
             renderSportCards(sports, eventsBySi);
         });
     });
