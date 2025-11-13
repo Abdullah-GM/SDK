@@ -500,6 +500,13 @@ body {
     border-radius: 5px;
 }
 
+.no-markets {
+    color: #fff;
+    text-align: center;
+    margin-top: 50px;
+    font-size: 20px;
+}
+
 @media (max-width: 1500px) {
     .sports-tabrow {
         justify-content: flex-start;
