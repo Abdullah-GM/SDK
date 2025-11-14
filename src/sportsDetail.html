@@ -220,27 +220,47 @@
                         existingOverlay.remove();
                     }
 
-                    // Check if market is suspended or ball running
-                    if (marketData.s === true && marketData.sb) {
-                        let overlayText = '';
-                        let overlayClass = '';
+                    // Check if market is Betfair (no hyphen in ID)
+                    const isBetfairMarket = marketData.mid && !marketData.mid.includes('-');
 
-                        if (marketData.sb === 'S') {
-                            overlayText = 'Suspended';
-                            overlayClass = 'suspended';
-                        } else if (marketData.sb === 'B') {
-                            overlayText = 'Ball Running';
-                            overlayClass = 'ball-running';
-                        }
-
-                        if (overlayText) {
+                    if (isBetfairMarket) {
+                        // BETFAIR LOGIC: Show overlay if s !== "OPEN"
+                        if (marketData.s !== "OPEN") {
                             const overlay = document.createElement('div');
-                            overlay.className = `odds-overlay ${overlayClass}`;
-                            overlay.textContent = overlayText;
+                            overlay.className = 'odds-overlay suspended';
+                            overlay.textContent = marketData.s || 'Suspended';
                             matchesOddsWrp.appendChild(overlay);
+                        }
+                    } else {
+                        // NON-BETFAIR LOGIC: Original logic for suspended/ball running
+                        if (marketData.s === true && marketData.sb) {
+                            let overlayText = '';
+                            let overlayClass = '';
+
+                            if (marketData.sb === 'S') {
+                                overlayText = 'Suspended';
+                                overlayClass = 'suspended';
+                            } else if (marketData.sb === 'B') {
+                                overlayText = 'Ball Running';
+                                overlayClass = 'ball-running';
+                            }
+
+                            if (overlayText) {
+                                const overlay = document.createElement('div');
+                                overlay.className = `odds-overlay ${overlayClass}`;
+                                overlay.textContent = overlayText;
+                                matchesOddsWrp.appendChild(overlay);
+                            }
                         }
                     }
                 });
+                 console.log('🔍 Market Status Check:', {
+        marketId: marketId,
+        isBetfair: !marketData.mid.includes('-'),
+        s_value: marketData.s,
+        s_type: typeof marketData.s,
+        sb_value: marketData.sb
+    });
             }
 
             function updateOddElement(element, oddType, marketData) {
@@ -495,21 +515,31 @@
             }
 
             function createStatusOverlayHTML(market) {
-                // Only create overlay if market is suspended or ball running
-                if (market.s === true && market.sb) {
-                    let overlayText = '';
-                    let overlayClass = '';
+                // Check if market is Betfair (no hyphen in ID)
+                const isBetfairMarket = market.mid && !market.mid.includes('-');
 
-                    if (market.sb === 'S') {
-                        overlayText = 'Suspended';
-                        overlayClass = 'suspended';
-                    } else if (market.sb === 'B') {
-                        overlayText = 'Ball Running';
-                        overlayClass = 'ball-running';
+                if (isBetfairMarket) {
+                    // BETFAIR LOGIC: Show overlay if s !== "OPEN"
+                    if (market.s !== "OPEN") {
+                        return `<div class="odds-overlay suspended">${market.s || 'Suspended'}</div>`;
                     }
+                } else {
+                    // NON-BETFAIR LOGIC: Original logic for suspended/ball running
+                    if (market.s === true && market.sb) {
+                        let overlayText = '';
+                        let overlayClass = '';
 
-                    if (overlayText) {
-                        return `<div class="odds-overlay ${overlayClass}">${overlayText}</div>`;
+                        if (market.sb === 'S') {
+                            overlayText = 'Suspended';
+                            overlayClass = 'suspended';
+                        } else if (market.sb === 'B') {
+                            overlayText = 'Ball Running';
+                            overlayClass = 'ball-running';
+                        }
+
+                        if (overlayText) {
+                            return `<div class="odds-overlay ${overlayClass}">${overlayText}</div>`;
+                        }
                     }
                 }
                 return '';
