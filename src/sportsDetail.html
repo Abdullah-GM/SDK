@@ -155,21 +155,10 @@
             function updateOddElement(element, oddType, marketData) {
                 const [type, position] = oddType.split('-');
 
-                console.log('🔍 Debug updateOddElement:', {
-                    marketId: marketData.mid,
-                    hasHyphen: marketData.mid && marketData.mid.includes('-'),
-                    hasRunners: marketData.r && marketData.r.length > 0,
-                    firstRunner: marketData.r && marketData.r[0],
-                    hasB1: marketData.r && marketData.r[0] && marketData.r[0].b1 !== undefined,
-                    type: type,
-                    position: position
-                });
-
                 // Check if market has hyphen in ID - PRIMARY LOGIC
                 const hasHyphen = marketData.mid && marketData.mid.includes('-');
 
                 if (hasHyphen) {
-                    console.log('📦 Using 2-box logic (hyphen detected)');
                     // HYPHEN LOGIC: Market with hyphen is always 2-box
                     if (marketData.r && marketData.r.length > 0) {
                         updateTwoBoxMarketWithRunners(element, type, parseInt(position), marketData);
@@ -177,43 +166,33 @@
                         updateTwoBoxMarketDirect(element, type, parseInt(position), marketData);
                     }
                 } else {
-                    console.log('📦 Using data structure logic (no hyphen)');
-                    // NO HYPHEN LOGIC: Check data structure for 6-box vs 2-box
                     // SCENARIO 1: 6-box market (has b1, b2, b3 in runners)
                     if (marketData.r && marketData.r.length > 0 && marketData.r[0].b1 !== undefined) {
-                        console.log('🎯 Detected as 6-box market');
                         updateSixBoxMarket(element, type, parseInt(position), marketData);
                     }
                     // SCENARIO 2: 2-box market with runners (has b, l in runners)
                     else if (marketData.r && marketData.r.length > 0 && marketData.r[0].b !== undefined) {
-                        console.log('🎯 Detected as 2-box market with runners');
                         updateTwoBoxMarketWithRunners(element, type, parseInt(position), marketData);
                     }
                     // SCENARIO 3: Direct market properties (no runners array)
                     else {
-                        console.log('🎯 Detected as direct market properties');
                         updateTwoBoxMarketDirect(element, type, parseInt(position), marketData);
                     }
                 }
             }
 
             // SCENARIO 1: 6-box market
-            // SCENARIO 1: 6-box market
             function updateSixBoxMarket(element, type, position, marketData) {
-                console.log('🔄 updateSixBoxMarket called:', { type, position });
 
                 const marketElement = element.closest('[data-runner-id]');
                 if (!marketElement) {
-                    console.log('❌ No runner element found for 6-box market');
                     return;
                 }
 
                 const runnerId = marketElement.getAttribute('data-runner-id');
-                console.log('🔍 Looking for runner:', runnerId, 'in runners:', marketData.r);
 
                 const runner = marketData.r.find(r => r.rid == runnerId);
                 if (!runner) {
-                    console.log('❌ Runner not found:', runnerId);
                     return;
                 }
 
@@ -224,26 +203,16 @@
                 const oddsValue = runner[oddsKey];
                 const priceValue = runner[amountKey];
 
-                console.log('💰 6-box Data:', {
-                    runnerId,
-                    oddsKey,
-                    amountKey,
-                    oddsValue,
-                    priceValue
-                });
-
                 if (oddsValue !== undefined && oddsValue !== null) {
                     // Show "0" instead of "--" for zero odds
                     const displayOdds = oddsValue === "0" ? "0" : oddsValue;
                     const displayPrice = (priceValue === 0 || priceValue === "0") ? "--" : priceValue;
 
-                    console.log('✅ Updating UI with:', { displayOdds, displayPrice });
 
                     element.querySelector('.odd-val').textContent = displayOdds;
                     element.querySelector('.odd-price').textContent = displayPrice;
                     highlightUpdate(element);
                 } else {
-                    console.log('❌ No odds value found for key:', oddsKey);
                 }
             }
 
