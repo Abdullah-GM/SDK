@@ -76,7 +76,7 @@
 
             function removeMarketFromListing(marketId) {
                 console.log('🗑️ Removing market from listing:', marketId);
-                
+
                 // Find and remove all elements with this market ID
                 const marketElements = document.querySelectorAll(`[data-market-id="${marketId}"]`);
                 marketElements.forEach(element => {
@@ -209,7 +209,7 @@
             function updateMarketStatusOverlay(marketId, marketData) {
                 // Find all market elements with this market ID
                 const marketElements = document.querySelectorAll(`[data-market-id="${marketId}"]`);
-                
+
                 marketElements.forEach(marketElement => {
                     const matchesOddsWrp = marketElement.querySelector('.matches-odds-wrp');
                     if (!matchesOddsWrp) return;
@@ -224,11 +224,15 @@
                     const isBetfairMarket = marketData.mid && !marketData.mid.includes('-');
 
                     if (isBetfairMarket) {
-                        // BETFAIR LOGIC: Show overlay if s !== "OPEN"
-                        if (marketData.s !== "OPEN") {
+                        // FIX: For Betfair markets, check if s is boolean true or string "OPEN"
+                        const isMarketActive = marketData.s === true || marketData.s === "OPEN";
+
+                        // Show overlay only if market is NOT active
+                        if (!isMarketActive) {
                             const overlay = document.createElement('div');
                             overlay.className = 'odds-overlay suspended';
-                            overlay.textContent = marketData.s || 'Suspended';
+                            // Use the actual s value or fallback to 'Suspended'
+                            overlay.textContent = typeof marketData.s === 'string' ? marketData.s : 'Suspended';
                             matchesOddsWrp.appendChild(overlay);
                         }
                     } else {
@@ -254,13 +258,14 @@
                         }
                     }
                 });
-                 console.log('🔍 Market Status Check:', {
-        marketId: marketId,
-        isBetfair: !marketData.mid.includes('-'),
-        s_value: marketData.s,
-        s_type: typeof marketData.s,
-        sb_value: marketData.sb
-    });
+
+                console.log('🔍 Market Status Check:', {
+                    marketId: marketId,
+                    isBetfair: !marketData.mid.includes('-'),
+                    s_value: marketData.s,
+                    s_type: typeof marketData.s,
+                    sb_value: marketData.sb
+                });
             }
 
             function updateOddElement(element, oddType, marketData) {
@@ -514,14 +519,18 @@
                 }
             }
 
+
             function createStatusOverlayHTML(market) {
                 // Check if market is Betfair (no hyphen in ID)
                 const isBetfairMarket = market.mid && !market.mid.includes('-');
 
                 if (isBetfairMarket) {
-                    // BETFAIR LOGIC: Show overlay if s !== "OPEN"
-                    if (market.s !== "OPEN") {
-                        return `<div class="odds-overlay suspended">${market.s || 'Suspended'}</div>`;
+                    // FIX: For Betfair markets, check if s is boolean true or string "OPEN"
+                    const isMarketActive = market.s === true || market.s === "OPEN";
+
+                    // Show overlay only if market is NOT active
+                    if (!isMarketActive) {
+                        return `<div class="odds-overlay suspended">${typeof market.s === 'string' ? market.s : 'Suspended'}</div>`;
                     }
                 } else {
                     // NON-BETFAIR LOGIC: Original logic for suspended/ball running
