@@ -500,7 +500,7 @@ body {
     border-radius: 5px;
 }
 
-.no-markets {
+.no-markets, .no-event-message {
     color: #fff;
     text-align: center;
     margin-top: 50px;

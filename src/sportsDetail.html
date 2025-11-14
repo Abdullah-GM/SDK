@@ -4,221 +4,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Sports Betting Odds</title>
     <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
     <div class="sports-page">
-        <div class="mktdetail-listing">
-
-        </div>
+        <div class="mktdetail-listing"></div>
     </div>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
     <script>
-        const socket = io('https://preprodvicsdk.bettech.live/', {
-            reconnectionAttempts: 1000,
-            transports: ["websocket"]
-        });
-
-        let subscribedMarkets = new Set();
-        let marketTypeMap = {}; // Dynamic market type mapping
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            const eventId = urlParams.get('eid');
-
-            if (!eventId) {
-                showNoEventMessage();
-                return;
+        class SportsOddsManager {
+            constructor() {
+                this.socket = io('https://preprodvicsdk.bettech.live/', {
+                    reconnectionAttempts: 1000,
+                    transports: ["websocket"]
+                });
+                this.subscribedMarkets = new Set();
+                this.marketTypeMap = {};
+                this.eventId = null;
+                
+                this.init();
             }
 
-            socket.on('odds', updateLiveOdds);
-            socket.on('update', updateLiveOdds);
+            init() {
+                this.eventId = new URLSearchParams(window.location.search).get('eid');
+                
+                if (!this.eventId) {
+                    this.showNoEventMessage();
+                    return;
+                }
 
-            socket.on('connect', () => {
-                socket.emit('market', { type: "list", data: eventId }, (marketCallback) => {
-                    if (!marketCallback?.data?.[eventId]) {
-                        showNoEventMessage();
+                this.setupSocketListeners();
+            }
+
+            setupSocketListeners() {
+                this.socket.on('odds', this.updateLiveOdds.bind(this));
+                this.socket.on('update', this.updateLiveOdds.bind(this));
+                
+                this.socket.on('connect', () => {
+                    this.loadMarkets();
+                });
+
+                this.socket.on('disconnect', () => {
+                    console.log('Disconnected from server');
+                });
+            }
+
+            loadMarkets() {
+                this.socket.emit('market', { 
+                    type: "list", 
+                    data: this.eventId 
+                }, (marketCallback) => {
+                    if (!marketCallback?.data?.[this.eventId]) {
+                        this.showNoEventMessage();
                         return;
                     }
-                    populateActiveMarkets(marketCallback);
+                    this.populateActiveMarkets(marketCallback);
                 });
-            });
-
-            function showNoEventMessage() {
-                const container = document.querySelector('.mktdetail-listing');
-                if (!container) return;
-                container.innerHTML = `
-                <div class="no-event-message">
-                    <h2>No Event Found</h2>
-                    <p>The requested event could not be found or is no longer available.</p>
-                </div>
-            `;
             }
 
-            function populateActiveMarkets(marketData) {
+            showNoEventMessage() {
+                const container = document.querySelector('.mktdetail-listing');
+                if (!container) return;
+                
+                container.innerHTML = `
+                    <div class="no-event-message">
+                        <h2>No Event Found</h2>
+                        <p>The requested event could not be found or is no longer available.</p>
+                    </div>
+                `;
+            }
+
+            populateActiveMarkets(marketData) {
                 const container = document.querySelector('.mktdetail-listing');
                 if (!container) return;
 
                 container.innerHTML = '';
-                const allMarkets = marketData.data[eventId];
-                const activeMarkets = allMarkets.filter(market => market.s === true && market.go === false);
+                
+                const allMarkets = marketData.data[this.eventId];
+                const activeMarkets = allMarkets.filter(market => 
+                    market.s === true && market.go === false
+                );
 
                 if (activeMarkets.length === 0) {
                     container.innerHTML = '<div class="no-markets">No active markets available</div>';
                     return;
                 }
 
-                // Build dynamic market type mapping
-                buildMarketTypeMap(activeMarkets);
+                this.buildMarketTypeMap(activeMarkets);
+                this.subscribeToMarkets(activeMarkets);
 
-                subscribeToMarkets(activeMarkets);
-
-                const marketsByType = groupMarketsByType(activeMarkets);
+                const marketsByType = this.groupMarketsByType(activeMarkets);
                 Object.keys(marketsByType).forEach(marketType => {
-                    const marketSection = createMarketSection(marketType, marketsByType[marketType]);
+                    const marketSection = this.createMarketSection(marketType, marketsByType[marketType]);
                     container.appendChild(marketSection);
                 });
             }
 
-            function buildMarketTypeMap(markets) {
-                // Reset the map
-                marketTypeMap = {};
+            buildMarketTypeMap(markets) {
+                this.marketTypeMap = {};
                 
-                // Get all unique market types
                 const uniqueTypes = [...new Set(markets.map(market => market.ty))];
                 
-                // Create user-friendly names for each type
+                const commonMappings = {
+                    'match-odd': 'Match Odds',
+                    'session': 'Session Markets',
+                    'fancy': 'Fancy Markets',
+                    'bookmaker': 'Bookmaker',
+                    'tied-match': 'Tied Match',
+                    'completed-match': 'Completed Match'
+                };
+                
                 uniqueTypes.forEach(type => {
                     if (!type) {
-                        marketTypeMap['other'] = 'Other Markets';
+                        this.marketTypeMap['other'] = 'Other Markets';
                         return;
                     }
                     
-                    // Common mappings
-                    const commonMappings = {
-                        'match-odd': 'Match Odds',
-                        'session': 'Session Markets',
-                        'fancy': 'Fancy Markets',
-                        'bookmaker': 'Bookmaker',
-                        'tied-match': 'Tied Match',
-                        'completed-match': 'Completed Match'
-                    };
-                    
-                    // Use common mapping or generate from type
-                    marketTypeMap[type] = commonMappings[type] || 
+                    this.marketTypeMap[type] = commonMappings[type] || 
                         type.split('-')
                             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                             .join(' ');
                 });
-                
-                console.log('📊 Dynamic Market Types:', marketTypeMap);
             }
 
-            function subscribeToMarkets(markets) {
+            subscribeToMarkets(markets) {
                 const marketIds = markets.map(market => market.mid).filter(Boolean);
                 if (marketIds.length === 0) return;
 
                 const marketIdsString = marketIds.join(',');
-                socket.emit('subscribe', marketIdsString, (response) => {
+                this.socket.emit('subscribe', marketIdsString, (response) => {
                     if (response.status === 1) {
-                        marketIds.forEach(id => subscribedMarkets.add(id));
-                        console.log('Subscribed to markets:', marketIdsString);
+                        marketIds.forEach(id => this.subscribedMarkets.add(id));
+                        console.log('✅ Subscribed to markets:', marketIdsString);
                     }
                 });
             }
 
-            function updateLiveOdds(oddsData) {
+            updateLiveOdds(oddsData) {
                 console.log('📊 Live Data Received:', oddsData);
 
                 if (!oddsData?.data) return;
 
-                const marketUpdates = [];
-
-                // Handle both data structures
-                if (Array.isArray(oddsData.data)) {
-                    oddsData.data.forEach(item => item.data && marketUpdates.push(item.data));
-                } else {
-                    Object.values(oddsData.data).forEach(market => marketUpdates.push(market));
-                }
-
-                // Update markets
+                const marketUpdates = this.extractMarketUpdates(oddsData);
                 marketUpdates.forEach(marketData => {
                     if (marketData.mid) {
-                        updateMarketOdds(marketData.mid, marketData);
+                        this.updateMarketOdds(marketData.mid, marketData);
                     }
                 });
             }
 
-            function updateMarketOdds(marketId, marketData) {
-                const oddsElements = document.querySelectorAll(`[data-market="${marketId}"]`);
-                if (oddsElements.length === 0) {
-                    return;
+            extractMarketUpdates(oddsData) {
+                const updates = [];
+                
+                if (Array.isArray(oddsData.data)) {
+                    oddsData.data.forEach(item => item.data && updates.push(item.data));
+                } else {
+                    Object.values(oddsData.data).forEach(market => updates.push(market));
                 }
+                
+                return updates;
+            }
+
+            updateMarketOdds(marketId, marketData) {
+                const oddsElements = document.querySelectorAll(`[data-market="${marketId}"]`);
+                if (oddsElements.length === 0) return;
 
                 oddsElements.forEach(element => {
                     const oddType = element.getAttribute('data-type');
-                    updateOddElement(element, oddType, marketData);
+                    this.updateOddElement(element, oddType, marketData);
                 });
             }
 
-            function updateOddElement(element, oddType, marketData) {
-                const [type] = oddType.split('-');
-                const isTwoBoxMarket = marketData.mid && marketData.mid.includes('-');
-
-                if (isTwoBoxMarket) {
-                    updateTwoBoxMarket(element, type, marketData);
+            updateOddElement(element, oddType, marketData) {
+                const [type, position] = oddType.split('-');
+                
+                // Check if this is a 6-box market (has runners)
+                if (marketData.r && marketData.r.length > 0) {
+                    this.updateSixBoxMarket(element, type, parseInt(position), marketData);
                 } else {
-                    updateSixBoxMarket(element, type, marketData);
+                    this.updateTwoBoxMarket(element, type, marketData);
                 }
             }
 
-            function updateTwoBoxMarket(element, type, marketData) {
+            updateTwoBoxMarket(element, type, marketData) {
                 const oddsValue = type === 'back' ? marketData.b : marketData.l;
                 const priceValue = type === 'back' ? marketData.br : marketData.lr;
 
-                // Always update, even with 0 values
                 if (oddsValue !== undefined && oddsValue !== null) {
                     element.querySelector('.odd-val').textContent = oddsValue;
                     element.querySelector('.odd-price').textContent = priceValue || '--';
-
-                    element.classList.add('blink');
-                    setTimeout(() => element.classList.remove('blink'), 1000);
+                    this.highlightUpdate(element);
                 }
             }
 
-            function updateSixBoxMarket(element, type, marketData) {
-                if (!marketData.r || !marketData.r.length) {
-                    return;
-                }
-
+            updateSixBoxMarket(element, type, position, marketData) {
                 const marketElement = element.closest('[data-runner-id]');
-                if (!marketElement) {
-                    return;
-                }
+                if (!marketElement) return;
 
                 const runnerId = marketElement.getAttribute('data-runner-id');
                 const runner = marketData.r.find(r => r.rid == runnerId);
-                if (!runner) {
-                    return;
-                }
+                if (!runner) return;
 
-                const oddsValue = type === 'back' ? runner.b : runner.l;
-                const priceValue = type === 'back' ? runner.br : runner.lr;
+                // Get the correct price and amount based on position
+                const oddsValue = runner[`${type}${position}`];
+                const priceValue = runner[`${type === 'back' ? 'br' : 'lr'}${position}`];
 
-                // Update the UI
                 if (oddsValue !== undefined && oddsValue !== null) {
                     element.querySelector('.odd-val').textContent = oddsValue;
                     element.querySelector('.odd-price').textContent = priceValue || '--';
-
-                    element.classList.add('blink');
-                    setTimeout(() => element.classList.remove('blink'), 1000);
+                    this.highlightUpdate(element);
                 }
             }
 
-            function groupMarketsByType(markets) {
+            highlightUpdate(element) {
+                element.classList.add('blink');
+                setTimeout(() => element.classList.remove('blink'), 1000);
+            }
+
+            groupMarketsByType(markets) {
                 const grouped = {};
                 markets.forEach(market => {
                     const type = market.ty || 'other';
@@ -228,106 +234,115 @@
                 return grouped;
             }
 
-            function createMarketSection(marketType, markets) {
-                console.log('Creating section for:', marketType, markets);
-                
+            createMarketSection(marketType, markets) {
                 const section = document.createElement('div');
                 section.className = 'mktdetail-list has-tooltip';
 
                 section.innerHTML = `
-                <div class="mktdetail-list-hdr">
-                    <div class="mktdetail-list-ttl">
-                        <span class="mktdetail-list-cat">${formatMarketType(marketType)}</span>
+                    <div class="mktdetail-list-hdr">
+                        <div class="mktdetail-list-ttl">
+                            <span class="mktdetail-list-cat">${this.formatMarketType(marketType)}</span>
+                        </div>
+                        <div class="mktdetail-list-odds">
+                            <div class="mktdetail-list-odd type-back">Back</div>
+                            <div class="mktdetail-list-odd type-lay">Lay</div>
+                        </div>
                     </div>
-                    <div class="mktdetail-list-odds">
-                        <div class="mktdetail-list-odd type-back">Back</div>
-                        <div class="mktdetail-list-odd type-lay">Lay</div>
+                    <div class="mktdetail-list-content">
+                        <div class="mktdtl-desk-wrp">
+                            ${markets.map(market => this.createMarketHTML(market)).join('')}
+                        </div>
                     </div>
-                </div>
-                <div class="mktdetail-list-content">
-                    <div class="mktdtl-desk-wrp">
-                        ${markets.map(market => createMarketHTML(market)).join('')}
-                    </div>
-                </div>
-            `;
+                `;
 
                 return section;
             }
 
-            function createMarketHTML(market) {
-                const isTwoBoxMarket = market.mid && market.mid.includes('-');
-
-                if (market.r && market.r.length > 0) {
-                    return market.r.map(runner => `
-                    <div class="mktdetail-list-topmatches" data-market-id="${market.mid}" data-runner-id="${runner.rid}">
-                        <div class="team-wpr">
-                            <div class="team-name">
-                                <div>${runner.na}</div>
-                            </div>
-                        </div>
-                        <div class="matches-odds-wrp">
-                            <div class="odds-count-wrp">
-                                <div class="top-matches-count type-back">
-                                    ${createOddsHTML('back', market.mid, isTwoBoxMarket)}
-                                </div>
-                                <div class="top-matches-count type-lay">
-                                    ${createOddsHTML('lay', market.mid, isTwoBoxMarket)}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
+            createMarketHTML(market) {
+                // Check if it's a 6-box market (has runners with multiple prices)
+                const hasMultipleRunners = market.r && market.r.length > 0;
+                
+                if (hasMultipleRunners) {
+                    return market.r.map(runner => this.createRunnerHTML(market.mid, runner)).join('');
                 } else {
-                    return `
-                    <div class="mktdetail-list-topmatches" data-market-id="${market.mid}">
-                        <div class="team-wpr">
-                            <div class="team-name">
-                                <div>${market.na}</div>
-                            </div>
-                        </div>
-                        <div class="matches-odds-wrp">
-                            <div class="odds-count-wrp">
-                                <div class="top-matches-count type-back">
-                                    ${createOddsHTML('back', market.mid, isTwoBoxMarket)}
-                                </div>
-                                <div class="top-matches-count type-lay">
-                                    ${createOddsHTML('lay', market.mid, isTwoBoxMarket)}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                    return this.createSimpleMarketHTML(market);
                 }
             }
 
-            function createOddsHTML(type, marketId, isTwoBoxMarket) {
-                if (isTwoBoxMarket) {
-                    return `
-                    <div class="match-odd ${type}-bg" data-market="${marketId}" data-type="${type}-1">
-                        <div class="odd-val">--</div>
-                        <div class="odd-price">--</div>
+            createRunnerHTML(marketId, runner) {
+                return `
+                    <div class="mktdetail-list-topmatches" data-market-id="${marketId}" data-runner-id="${runner.rid}">
+                        <div class="team-wpr">
+                            <div class="team-name">
+                                <div>${runner.na || 'N/A'}</div>
+                            </div>
+                        </div>
+                        <div class="matches-odds-wrp">
+                            <div class="odds-count-wrp">
+                                <div class="top-matches-count type-back">
+                                    ${this.createSixBoxOddsHTML('back', marketId)}
+                                </div>
+                                <div class="top-matches-count type-lay">
+                                    ${this.createSixBoxOddsHTML('lay', marketId)}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 `;
-                } else {
-                    return [1, 2, 3].map(position => `
+            }
+
+            createSimpleMarketHTML(market) {
+                return `
+                    <div class="mktdetail-list-topmatches" data-market-id="${market.mid}">
+                        <div class="team-wpr">
+                            <div class="team-name">
+                                <div>${market.na || 'N/A'}</div>
+                            </div>
+                        </div>
+                        <div class="matches-odds-wrp">
+                            <div class="odds-count-wrp">
+                                <div class="top-matches-count type-back">
+                                    ${this.createTwoBoxOddsHTML('back', market.mid)}
+                                </div>
+                                <div class="top-matches-count type-lay">
+                                    ${this.createTwoBoxOddsHTML('lay', market.mid)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            createSixBoxOddsHTML(type, marketId) {
+                return [1, 2, 3].map(position => `
                     <div class="match-odd ${type}-bg" data-market="${marketId}" data-type="${type}-${position}">
                         <div class="odd-val">--</div>
                         <div class="odd-price">--</div>
                     </div>
                 `).join('');
-                }
             }
 
-            function formatMarketType(type) {
-                // Use the dynamic mapping, fallback to auto-formatting
-                return marketTypeMap[type] || 
+            createTwoBoxOddsHTML(type, marketId) {
+                return `
+                    <div class="match-odd ${type}-bg" data-market="${marketId}" data-type="${type}-1">
+                        <div class="odd-val">--</div>
+                        <div class="odd-price">--</div>
+                    </div>
+                `;
+            }
+
+            formatMarketType(type) {
+                return this.marketTypeMap[type] || 
                     (type ? type.split('-')
                         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                         .join(' ') : 'Other Markets');
             }
+        }
+
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            new SportsOddsManager();
         });
     </script>
-
 </body>
-
 </html>
