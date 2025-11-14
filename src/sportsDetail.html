@@ -194,7 +194,8 @@
                 const priceValue = runner[`${type === 'back' ? 'br' : 'lr'}${position}`];
 
                 if (oddsValue !== undefined && oddsValue !== null) {
-                    const displayOdds = oddsValue === "0" ? "--" : oddsValue;
+                    // Show "0" instead of "--" for zero odds
+                    const displayOdds = oddsValue === "0" ? "0" : oddsValue;
                     const displayPrice = (priceValue === 0 || priceValue === "0") ? "--" : priceValue;
                     
                     element.querySelector('.odd-val').textContent = displayOdds;
@@ -218,7 +219,8 @@
                     const priceValue = type === 'back' ? runner.br : runner.lr;
 
                     if (oddsValue !== undefined && oddsValue !== null) {
-                        const displayOdds = oddsValue === 0 || oddsValue === "0" ? "--" : oddsValue;
+                        // Show "0" instead of "--" for zero odds
+                        const displayOdds = oddsValue === 0 || oddsValue === "0" ? "0" : oddsValue;
                         const displayPrice = (priceValue === 0 || priceValue === "0") ? "--" : priceValue;
                         
                         element.querySelector('.odd-val').textContent = displayOdds;
@@ -236,7 +238,8 @@
                     const priceValue = type === 'back' ? marketData.br : marketData.lr;
 
                     if (oddsValue !== undefined && oddsValue !== null) {
-                        const displayOdds = oddsValue === 0 || oddsValue === "0" ? "--" : oddsValue;
+                        // Show "0" instead of "--" for zero odds
+                        const displayOdds = oddsValue === 0 || oddsValue === "0" ? "0" : oddsValue;
                         const displayPrice = (priceValue === 0 || priceValue === "0") ? "--" : priceValue;
                         
                         element.querySelector('.odd-val').textContent = displayOdds;
