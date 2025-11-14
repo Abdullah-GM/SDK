@@ -38,7 +38,12 @@
                 if (updateData.data && Array.isArray(updateData.data)) {
                     updateData.data.forEach(item => {
                         if (item.data && item.data.mid) {
-                            updateMarketOdds(item.data.mid, item.data);
+                            // Check if market should be removed
+                            if (item.data.s === false || item.data.go === true) {
+                                removeMarketFromListing(item.data.mid);
+                            } else {
+                                updateMarketOdds(item.data.mid, item.data);
+                            }
                         }
                     });
                 } else if (updateData.market && updateData.market.mid) {
@@ -59,9 +64,49 @@
             function fetchMarketData(marketId) {
                 socket.emit('market', { type: "data", data: marketId }, (marketData) => {
                     if (marketData && marketData.data) {
-                        updateMarketOdds(marketId, marketData.data);
+                        // Check if market should be removed
+                        if (marketData.data.s === false || marketData.data.go === true) {
+                            removeMarketFromListing(marketId);
+                        } else {
+                            updateMarketOdds(marketId, marketData.data);
+                        }
                     }
                 });
+            }
+
+            function removeMarketFromListing(marketId) {
+                console.log('🗑️ Removing market from listing:', marketId);
+                
+                // Find and remove all elements with this market ID
+                const marketElements = document.querySelectorAll(`[data-market-id="${marketId}"]`);
+                marketElements.forEach(element => {
+                    element.remove();
+                });
+
+                // Also remove elements with data-market attribute
+                const oddsElements = document.querySelectorAll(`[data-market="${marketId}"]`);
+                oddsElements.forEach(element => {
+                    element.closest('.mktdetail-list-topmatches')?.remove();
+                });
+
+                // Remove empty market sections
+                removeEmptyMarketSections();
+            }
+
+            function removeEmptyMarketSections() {
+                const marketSections = document.querySelectorAll('.mktdetail-list');
+                marketSections.forEach(section => {
+                    const marketItems = section.querySelectorAll('.mktdetail-list-topmatches');
+                    if (marketItems.length === 0) {
+                        section.remove();
+                    }
+                });
+
+                // Check if all sections are gone
+                const container = document.querySelector('.mktdetail-listing');
+                if (container && container.children.length === 0) {
+                    container.innerHTML = '<div class="no-markets">No active markets available</div>';
+                }
             }
 
             function showNoEventMessage() {
@@ -81,6 +126,7 @@
 
                 container.innerHTML = '';
                 const allMarkets = marketData.data[eventId];
+                // Only show markets where s: true AND go: false
                 const activeMarkets = allMarkets.filter(market => market.s === true && market.go === false);
 
                 if (activeMarkets.length === 0) {
@@ -142,8 +188,17 @@
             function updateMarketOdds(marketId, marketData) {
                 console.log('🔄 Updating market:', marketId, marketData);
 
+                // Double-check if market should still be displayed
+                if (marketData.s === false || marketData.go === true) {
+                    removeMarketFromListing(marketId);
+                    return;
+                }
+
                 const oddsElements = document.querySelectorAll(`[data-market="${marketId}"]`);
                 if (oddsElements.length === 0) return;
+
+                // Update the suspended/ball running overlay
+                updateMarketStatusOverlay(marketId, marketData);
 
                 oddsElements.forEach(element => {
                     const oddType = element.getAttribute('data-type');
@@ -151,6 +206,42 @@
                 });
             }
 
+            function updateMarketStatusOverlay(marketId, marketData) {
+                // Find all market elements with this market ID
+                const marketElements = document.querySelectorAll(`[data-market-id="${marketId}"]`);
+                
+                marketElements.forEach(marketElement => {
+                    const matchesOddsWrp = marketElement.querySelector('.matches-odds-wrp');
+                    if (!matchesOddsWrp) return;
+
+                    // Remove existing overlay
+                    const existingOverlay = matchesOddsWrp.querySelector('.odds-overlay');
+                    if (existingOverlay) {
+                        existingOverlay.remove();
+                    }
+
+                    // Check if market is suspended or ball running
+                    if (marketData.s === true && marketData.sb) {
+                        let overlayText = '';
+                        let overlayClass = '';
+
+                        if (marketData.sb === 'S') {
+                            overlayText = 'Suspended';
+                            overlayClass = 'suspended';
+                        } else if (marketData.sb === 'B') {
+                            overlayText = 'Ball Running';
+                            overlayClass = 'ball-running';
+                        }
+
+                        if (overlayText) {
+                            const overlay = document.createElement('div');
+                            overlay.className = `odds-overlay ${overlayClass}`;
+                            overlay.textContent = overlayText;
+                            matchesOddsWrp.appendChild(overlay);
+                        }
+                    }
+                });
+            }
 
             function updateOddElement(element, oddType, marketData) {
                 const [type, position] = oddType.split('-');
@@ -183,14 +274,12 @@
 
             // SCENARIO 1: 6-box market
             function updateSixBoxMarket(element, type, position, marketData) {
-
                 const marketElement = element.closest('[data-runner-id]');
                 if (!marketElement) {
                     return;
                 }
 
                 const runnerId = marketElement.getAttribute('data-runner-id');
-
                 const runner = marketData.r.find(r => r.rid == runnerId);
                 if (!runner) {
                     return;
@@ -208,11 +297,9 @@
                     const displayOdds = oddsValue === "0" ? "0" : oddsValue;
                     const displayPrice = (priceValue === 0 || priceValue === "0") ? "--" : priceValue;
 
-
                     element.querySelector('.odd-val').textContent = displayOdds;
                     element.querySelector('.odd-price').textContent = displayPrice;
                     highlightUpdate(element);
-                } else {
                 }
             }
 
@@ -330,6 +417,7 @@
                                             ${createTwoBoxOddsHTML('lay', market.mid)}
                                         </div>
                                     </div>
+                                    ${createStatusOverlayHTML(market)}
                                 </div>
                             </div>
                         `).join('');
@@ -351,6 +439,7 @@
                                             ${createTwoBoxOddsHTML('lay', market.mid)}
                                         </div>
                                     </div>
+                                    ${createStatusOverlayHTML(market)}
                                 </div>
                             </div>
                         `;
@@ -375,6 +464,7 @@
                                         ${createTwoBoxOddsHTML('lay', market.mid)}
                                     </div>
                                 </div>
+                                ${createStatusOverlayHTML(market)}
                             </div>
                         </div>
                     `;
@@ -397,10 +487,32 @@
                                         ${createSixBoxOddsHTML('lay', market.mid)}
                                     </div>
                                 </div>
+                                ${createStatusOverlayHTML(market)}
                             </div>
                         </div>
                     `).join('');
                 }
+            }
+
+            function createStatusOverlayHTML(market) {
+                // Only create overlay if market is suspended or ball running
+                if (market.s === true && market.sb) {
+                    let overlayText = '';
+                    let overlayClass = '';
+
+                    if (market.sb === 'S') {
+                        overlayText = 'Suspended';
+                        overlayClass = 'suspended';
+                    } else if (market.sb === 'B') {
+                        overlayText = 'Ball Running';
+                        overlayClass = 'ball-running';
+                    }
+
+                    if (overlayText) {
+                        return `<div class="odds-overlay ${overlayClass}">${overlayText}</div>`;
+                    }
+                }
+                return '';
             }
 
             function createSixBoxOddsHTML(type, marketId) {
